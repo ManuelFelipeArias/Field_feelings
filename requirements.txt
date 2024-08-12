@@ -9,7 +9,6 @@ pandas==1.4.2
 pymssql==2.3.0
 python-dotenv==1.0.1
 python_dateutil==2.8.2
-PyYAML==6.0.1
 PyYAML==6.0.2
 scikit_learn==1.0.2
 streamlit==1.37.1
