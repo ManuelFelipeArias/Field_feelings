@@ -1,5 +1,6 @@
 altair==5.4.0
 langchain
+python3-distutils
 langchain_community==0.2.11
 langchain_core==0.2.29
 langchain_groq==0.1.9
