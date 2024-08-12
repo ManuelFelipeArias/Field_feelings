@@ -246,7 +246,7 @@ Ejemplo:
     """
 
     prompt = ChatPromptTemplate.from_template(template)
-    llm = ChatGroq(groq_api_key=os.environ['GROQ_API_KEY_2'], model_name="llama3-70b-8192")
+    llm = ChatGroq(groq_api_key=os.environ['GROQ_API_KEY_2'], model_name="llama-3.1-70b-versatile")
     chain = prompt | llm | JsonOutputParser()
 
     ai_query = chain.invoke({
@@ -270,7 +270,7 @@ def extract_liquidation_date(user_query: str) -> str:
     """
 
     prompt = ChatPromptTemplate.from_template(template)
-    llm = ChatGroq(groq_api_key=os.environ['GROQ_API_KEY'], model_name="llama3-70b-8192")
+    llm = ChatGroq(groq_api_key=os.environ['GROQ_API_KEY'], model_name="llama-3.1-70b-versatile")
     chain = prompt | llm | JsonOutputParser()
 
     response = chain.invoke({"user_query": user_query})
@@ -370,7 +370,7 @@ def get_response(user_query, chat_history, relevant_docs):
     """
 
     prompt = ChatPromptTemplate.from_template(template)
-    llm = ChatGroq(groq_api_key=os.environ['GROQ_API_KEY_2'], model_name="llama3-70b-8192")
+    llm = ChatGroq(groq_api_key=os.environ['GROQ_API_KEY_2'], model_name="llama-3.1-70b-versatile")
     chain = prompt | llm | StrOutputParser()
 
     return chain.stream({
