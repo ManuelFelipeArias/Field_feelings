@@ -17,14 +17,14 @@ To set up the project locally, follow these steps:
 1. Clone the repository:
 
 ```bash
-Copy code
+
 git clone https://github.com/your-username/field-feelings.git
 cd field-feelings
 ```
 2. Install the required dependencies:
 
 ```bash
-Copy code
+
 pip install -r requirements.txt
 ```
 
@@ -32,15 +32,15 @@ pip install -r requirements.txt
 Create a .env file in the project root directory and add your Groq API keys and other environment variables:
 
 ```bash
-Copy code
+
 GROQ_API_KEY=<your_groq_api_key>
 GROQ_API_KEY_2=<your_secondary_groq_api_key>
 ```
 4. Run the application:
 
 ```bash
-Copy code
-streamlit run app.py
+
+streamlit run main_feelings.py
 ```
 
 ## Usage

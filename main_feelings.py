@@ -6,8 +6,6 @@ from dotenv import load_dotenv
 from langchain_core.output_parsers import StrOutputParser, JsonOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 import pandas as pd
-import yaml
-import pymssql
 from datetime import datetime
 import re
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -16,8 +14,6 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from typing import Annotated, TypedDict
-from langgraph.graph import END,StateGraph
-from langgraph.prebuilt import tools_condition
 from langchain_community.document_loaders import PyPDFLoader
 import nltk
 from nltk.corpus import stopwords
@@ -25,6 +21,11 @@ import datetime
 import random
 import uuid
 import altair as alt
+import os
+from dotenv import load_dotenv
+import boto3
+from boto3.dynamodb.conditions import Attr
+from datetime import datetime
 
 # Cargar variables de entorno
 load_dotenv()
@@ -42,7 +43,51 @@ col1, col2 = st.columns([4, 1])
 sentimientos = pd.read_csv("sentimientos.csv")
 
 
-# Comprobar si la columna 'Feeling' existe
+
+# Cargar las variables de entorno desde el archivo .env
+load_dotenv()
+
+# Obtener las credenciales de AWS del archivo .env
+aws_access_key_id = os.getenv('AWS_ACCESS_KEY_ID')
+aws_secret_access_key = os.getenv('AWS_SECRET_ACCESS_KEY')
+aws_region = os.getenv('AWS_REGION')
+
+# Configurar boto3 con las credenciales
+dynamodb = boto3.resource(
+    'dynamodb',
+    region_name=aws_region,
+    aws_access_key_id=aws_access_key_id,
+    aws_secret_access_key=aws_secret_access_key
+)
+
+# Conectar a tu tabla DynamoDB
+table = dynamodb.Table('sentimientos')
+
+def create_item(conversation_id, feeling):
+    response = table.put_item(
+        Item={
+            'ConversationID': conversation_id,
+            'Timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+            'Feeling': feeling
+        }
+    )
+    return response
+
+def query_items(feeling):
+    response = table.scan(
+        FilterExpression=Attr('Feeling').eq(feeling)
+    )
+    return response['Items']
+
+# Obtener todos los sentimientos desde DynamoDB
+def get_sentiments_from_dynamodb():
+    response = table.scan()
+    items = response['Items']
+    return pd.DataFrame(items)
+
+sentimientos = get_sentiments_from_dynamodb()
+
+# Agrupar y contar los sentimientos
 if 'Feeling' in sentimientos.columns:
     # Agrupar por el campo 'Feeling' y contar la cantidad de ocurrencias de cada sentimiento
     grupos = sentimientos.groupby("Feeling").size().reset_index(name='Count')
@@ -51,9 +96,6 @@ if 'Feeling' in sentimientos.columns:
     with col2:
         # Título de la sección
         st.subheader("Distribución de Sentimientos")
-
-        # # Mostrar la tabla de grupos con estilo
-        # st.dataframe(grupos.style.highlight_max(axis=0, color='lightgreen'))
 
         # Crear un gráfico de barras con Altair
         chart = alt.Chart(grupos).mark_bar().encode(
@@ -70,12 +112,7 @@ if 'Feeling' in sentimientos.columns:
         # Mostrar el gráfico en Streamlit
         st.altair_chart(chart, use_container_width=True)
 else:
-    pass
-    # st.error("La columna 'Feeling' no existe en el archivo 'sentimientos.csv'.")
-
-
-
-
+    st.error("La columna 'Feeling' no existe en la tabla de sentimientos.")
 
 
 
@@ -403,53 +440,12 @@ with col1:
 user_query = st.chat_input("Escriba acá sus intereses...")
 
 
-def save_feeling_to_csv(chat_history, conversation_id, feeling):
+def save_feeling_to_dynamodb(chat_history, conversation_id, feeling):
     if len(chat_history) == 5:
-        feeling_data = {
-            "ConversationID": conversation_id,
-            "Timestamp": datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f'),
-            "Feeling": feeling
-        }
+        response = create_item(conversation_id, feeling)
+        return response
 
-        feeling_df = pd.DataFrame([feeling_data])
-        feeling_file = "sentimientos.csv"
-        
-        # Cargar el archivo existente si existe
-        if os.path.exists(feeling_file):
-            existing_df = pd.read_csv(feeling_file)
-            # Concatenar y eliminar duplicados
-            updated_df = pd.concat([existing_df, feeling_df]).drop_duplicates(subset=['ConversationID', 'Timestamp', 'Feeling'], keep='last')
-            updated_df.to_csv(feeling_file, index=False)
-        else:
-            feeling_df.to_csv(feeling_file, index=False)
-
-def save_conversation_to_csv(chat_history, conversation_id):
-    conversation_data = []
-    for message in chat_history:
-        if isinstance(message, AIMessage):
-            role = "AI"
-        elif isinstance(message, HumanMessage):
-            role = "Human"
-        else:
-            continue
-        conversation_data.append({
-            "ConversationID": conversation_id,
-            "Timestamp": datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f'),
-            "Role": role,
-            "Message": message.content
-        })
     
-    conversation_df = pd.DataFrame(conversation_data)
-    conversation_file = "conversation_history.csv"
-    
-    # Cargar el archivo existente si existe
-    if os.path.exists(conversation_file):
-        existing_df = pd.read_csv(conversation_file)
-        # Concatenar y eliminar duplicados
-        updated_df = pd.concat([existing_df, conversation_df]).drop_duplicates(subset=['ConversationID', 'Timestamp', 'Role', 'Message'], keep='last')
-        updated_df.to_csv(conversation_file, index=False)
-    else:
-        conversation_df.to_csv(conversation_file, index=False)
 
 
 
@@ -486,9 +482,7 @@ if user_query:
         try:
             feeling = get_feeling(user_query, st.session_state.chat_history)
             ai_feeling = feeling["feeling"]
-            save_feeling_to_csv(st.session_state.chat_history, st.session_state.conversation_id, ai_feeling)
+            save_feeling_to_dynamodb(st.session_state.chat_history, st.session_state.conversation_id, ai_feeling)
         except:
             st.write(feeling)
         
-    # Guardar la conversación en un CSV sin duplicados
-    save_conversation_to_csv(st.session_state.chat_history, st.session_state.conversation_id)
