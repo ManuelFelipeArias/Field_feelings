@@ -44,9 +44,6 @@ st.set_page_config(page_title="Field Feelings!",
 st.title("Field Feelings 😊")
 col1, col2 = st.columns([4, 1])
 
-# Leer el archivo sentimientos.csv
-sentimientos = pd.read_csv("sentimientos.csv")
-
 
 
 # Cargar las variables de entorno desde el archivo .env
