@@ -26,6 +26,11 @@ from dotenv import load_dotenv
 import boto3
 from boto3.dynamodb.conditions import Attr
 from datetime import datetime
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_groq import ChatGroq
+from langchain_core.output_parsers import StrOutputParser
+import json
+import dateutil.parser
 
 # Cargar variables de entorno
 load_dotenv()
@@ -244,11 +249,7 @@ def generate_radicado():
     radicado = f"RAD-{date_string}-{random_number}"
     return radicado
 
-from langchain_core.prompts import ChatPromptTemplate
-from langchain_groq import ChatGroq
-from langchain_core.output_parsers import StrOutputParser
-import json
-import dateutil.parser
+
 
 def get_feeling(user_query, chat_history):
     template = """
