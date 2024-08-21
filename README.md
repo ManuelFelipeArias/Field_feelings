@@ -16,35 +16,35 @@ To set up the project locally, follow these steps:
 
 1. Clone the repository:
 
-´´´bash
+```bash
 Copy code
 git clone https://github.com/your-username/field-feelings.git
 cd field-feelings
-´´´
+```
 2. Install the required dependencies:
 
-´´´bash
+```bash
 Copy code
 pip install -r requirements.txt
-´´´
+```
 
 3. Set up environment variables:
 Create a .env file in the project root directory and add your Groq API keys and other environment variables:
 
-´´´bash
+```bash
 Copy code
 GROQ_API_KEY=<your_groq_api_key>
 GROQ_API_KEY_2=<your_secondary_groq_api_key>
-´´´
+```
 4. Run the application:
 
-´´´bash
+```bash
 Copy code
 streamlit run app.py
-´´´
+```
 
 ## Usage
-Visit the application at Field Feelings and start a conversation by entering your current feelings. The AI will respond with empathetic messages and track your emotions over time.
+Visit the application at [Field Feelings](https://fieldfeelings.streamlit.app)  and start a conversation by entering your current feelings. The AI will respond with empathetic messages and track your emotions over time.
 
 ### Main Sections
 * Chat Interface: Engage in a conversation with the AI by typing in your feelings or thoughts. The AI will analyze your input and provide a suitable response.
