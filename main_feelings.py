@@ -382,37 +382,38 @@ Finanzauto S.A. BIC
     }
 
 
-
 def get_response(user_query, chat_history, relevant_docs):
     try:
         state = {
-            "messages": [{"role": "user", "content": user_query}], # Ajuste basado en cómo se están pasando los datos
-            "chat_history":chat_history,
-            "user_query":user_query
+            "messages": [{"role": "user", "content": user_query}],
+            "chat_history": chat_history,
+            "user_query": user_query
         }
     except Exception as e:
-        # st.write(e)
-        pass
-    
-    # st.write(state)
+        st.write(f"Error en la construcción del estado: {e}")
+        return None
     
     template = """
     Documentos relevantes: {relevant_docs}
-    Eres el mejor agente Pscicologo del mundo y el contexto te va a ayudar a dar mejores respuestas con respecto a lo que las personas sienten.Siempre respondes con la intención de que el usuario se sienta mejor y pueda resolver sus problemas de sentirse mal a bien ese es tu objetivo, puedes usar emojis.:
+    Eres el mejor agente Pscicologo del mundo y el contexto te va a ayudar a dar mejores respuestas con respecto a lo que las personas sienten. Siempre respondes con la intención de que el usuario se sienta mejor y pueda resolver sus problemas de sentirse mal a bien ese es tu objetivo, puedes usar emojis.:
     Chat histórico: {chat_history}
     Pregunta del usuario: {user_query}
     Sé breve en la respuesta.
     """
-
+    
     prompt = ChatPromptTemplate.from_template(template)
-    llm = ChatGroq(groq_api_key=os.environ['GROQ_API_KEY_2'], model_name="llama-3.1-70b-versatile")
-    chain = prompt | llm | StrOutputParser()
+    llm = ChatGroq(groq_api_key=os.environ.get('GROQ_API_KEY_2'), model_name="llama-3.1-70b-versatile")
 
-    return chain.invoke({
-        "chat_history": chat_history,
-        "user_query": user_query,
-        "relevant_docs": relevant_docs
-    })
+    try:
+        chain = prompt | llm | StrOutputParser()
+        return chain.invoke({
+            "chat_history": chat_history,
+            "user_query": user_query,
+            "relevant_docs": relevant_docs
+        })
+    except Exception as e:
+        st.write(f"Error al invocar la cadena de LLM: {e}")
+        return None
 
 # Estado de la sesión
 if "chat_history" not in st.session_state:
