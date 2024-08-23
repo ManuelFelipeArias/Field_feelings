@@ -406,11 +406,13 @@ def get_response(user_query, chat_history, relevant_docs):
 
     try:
         chain = prompt | llm | StrOutputParser()
-        return chain.stream({
-            "chat_history": chat_history,
-            "user_query": user_query,
-            "relevant_docs": relevant_docs
-        })
+        respuesta = chain.stream({
+              "chat_history": chat_history,
+              "user_query": user_query,
+              "relevant_docs": relevant_docs
+          })
+        print(respuesta)
+        return respuesta
     except Exception as e:
         st.write(f"Error al invocar la cadena de LLM: {e}")
         return None
