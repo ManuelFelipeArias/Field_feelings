@@ -406,7 +406,7 @@ def get_response(user_query, chat_history, relevant_docs):
 
     try:
         chain = prompt | llm | StrOutputParser()
-        return chain.invoke({
+        return chain.stream({
             "chat_history": chat_history,
             "user_query": user_query,
             "relevant_docs": relevant_docs
@@ -470,7 +470,7 @@ if user_query:
         
         relevant_docs = chunks_df_top_2["Chunk"].tolist()
             
-        response = st.write(get_response(
+        response = st.write_stream(get_response(
             user_query[:500], 
             str(st.session_state.chat_history[-5:])[:2000],
             relevant_docs=str(relevant_docs)
