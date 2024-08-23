@@ -408,7 +408,7 @@ def get_response(user_query, chat_history, relevant_docs):
     llm = ChatGroq(groq_api_key=os.environ['GROQ_API_KEY_2'], model_name="llama-3.1-70b-versatile")
     chain = prompt | llm | StrOutputParser()
 
-    return chain.stream({
+    return chain.invoke({
         "chat_history": chat_history,
         "user_query": user_query,
         "relevant_docs": relevant_docs
@@ -469,7 +469,7 @@ if user_query:
         
         relevant_docs = chunks_df_top_2["Chunk"].tolist()
             
-        response = st.write_stream(get_response(
+        response = st.write(get_response(
             user_query[:500], 
             str(st.session_state.chat_history[-5:])[:2000],
             relevant_docs=str(relevant_docs)
